@@ -1,8 +1,13 @@
-const path = require('path')
-const url = require('url')
-const { app, BrowserWindow } = require('electron')
+const path = require('path');
+const url = require('url');
 
-let mainWindow
+//let client = spawn('python', ['test1.py'], {cwd: '/tmp'});
+const spawn = require('child_process').spawn;
+
+ 
+const { app, BrowserWindow,ipcMain } = require('electron')
+
+let mainWindow;
 
 let isDev = false
 
@@ -12,6 +17,8 @@ if (
 ) {
 	isDev = true
 }
+
+
 
 function createMainWindow() {
 	mainWindow = new BrowserWindow({
@@ -64,6 +71,35 @@ function createMainWindow() {
 	mainWindow.on('closed', () => (mainWindow = null))
 }
 
+
+
+
+ipcMain.on('logs:load',sendLogs);
+
+// client.stdout.on('data', (data) => {
+// 	console.log(data.toString());
+//});
+
+async function sendLogs(){
+	try{
+		let client = spawn('python', ['photon_matrix.py']);
+	
+		const logs =[1,2,3,4];
+		mainWindow.webContents.send('logs:get',JSON.stringify({test:'test'}));
+		console.log(logs)
+		await client.stdout.on('data', (data) => {
+
+			console.log(data.toString());
+		});
+			// 	 console.log("data: ",data.toString('utf8'));
+		// 	console.log(data.toString('utf8'),'DATA');
+		
+		// });
+			
+ 	}catch(e){
+		console.log(e);
+	}
+}
 app.on('ready', createMainWindow)
 
 app.on('window-all-closed', () => {
